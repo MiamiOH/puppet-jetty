@@ -14,6 +14,7 @@ class jetty(
       managehome => true,
       system     => true,
       gid        => $group,
+      shell      => '/sbin/nologin',
       before     => Exec['jetty_untar'],
     })
 
@@ -48,13 +49,27 @@ class jetty(
 
   file { "/etc/init.d/jetty":
     ensure => "${home}/jetty-distribution-${version}/bin/jetty.sh",
-  } ~>
+  }
 
+  if $::service_provider == 'systemd' {
+    # systemd::unit_file { 'jetty.service':
+    #   content => template("${module_name}/jetty.service.erb"),
+    #   require => File['/etc/init.d/jetty'],
+    #   before => Service['jetty'],
+    # }
+    file { '/usr/lib/systemd/system/jetty.service':
+      ensure => file,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      content => template("${module_name}/jetty.service.erb"),
+    }
+  }
+    
   service { "jetty":
     enable     => true,
     ensure     => running,
     hasstatus  => false,
     hasrestart => true,
   }
-
 }
