@@ -1,9 +1,10 @@
 class jetty(
   $version,
-  $home        = '/opt',
-  $manage_user = true,
-  $user        = 'jetty',
-  $group       = 'jetty',
+  $home           = '/opt',
+  $manage_user    = true,
+  $manage_default = true,
+  $user           = 'jetty',
+  $group          = 'jetty',
 ) {
 
   include wget
@@ -43,12 +44,15 @@ class jetty(
     ensure => "${home}/jetty/logs",
   } ->
 
-  file { "/etc/default/jetty":
-    content => template('jetty/default'),
-  } ->
-
   file { "/etc/init.d/jetty":
     ensure => "${home}/jetty-distribution-${version}/bin/jetty.sh",
+  }
+
+  if $manage_default {
+    file { "/etc/default/jetty":
+      content => template('jetty/default'),
+      require => File['/var/log/jetty'],
+    }
   }
 
   if $::service_provider == 'systemd' {
