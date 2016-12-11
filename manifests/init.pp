@@ -5,6 +5,7 @@ class jetty(
   $manage_default = true,
   $user           = 'jetty',
   $group          = 'jetty',
+  $service_ensure = 'running',
 ) {
 
   include wget
@@ -72,7 +73,7 @@ class jetty(
     
   service { "jetty":
     enable     => true,
-    ensure     => running,
+    ensure     => $service_ensure,
     hasstatus  => false,
     hasrestart => true,
   }
